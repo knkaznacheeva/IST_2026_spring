@@ -1,6 +1,5 @@
 import random
 import typing as tp
-import math
 
 
 def is_prime(n: int) -> bool:
@@ -70,10 +69,10 @@ def generate_keypair(p: int, q: int) -> tp.Tuple[tp.Tuple[int, int], tp.Tuple[in
     phi = (p-1)(q-1)
 
     e = random.randrange(1, phi)
-    g = rsa.gcd(e, phi)
+    g = rsa.gsd(e, phi)
     while g != 1:
       e = random.randrange(1, phi)
-      g = rsa.gcd(e, phi)
+      g = rsa.gsd(e, phi)
 
     d = rsa.multiplicative_inverse(e, phi)
     return ((e, n), (d, n))
