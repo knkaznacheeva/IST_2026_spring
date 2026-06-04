@@ -14,10 +14,10 @@ def is_prime(n: int) -> bool:
     False
     """
     if n < 2:
-      return False
-    for i in range(2, int(n**0.5)+1):
-      if n % i == 0:
         return False
+    for i in range(2, int(n**0.5) + 1):
+        if n % i == 0:
+            return False
     return True
 
 
@@ -31,7 +31,7 @@ def gcd(a: int, b: int) -> int:
     1
     """
     while b:
-      a , b = b, a % b
+        a, b = b, a % b
     return a
 
 
@@ -43,19 +43,20 @@ def multiplicative_inverse(e: int, phi: int) -> int:
     >>> multiplicative_inverse(7, 40)
     23
     """
-    d, x1, x2 = 0, 0, 1
-    y1, y2 = 1, 0
-    original_phi = phi
-    while e > 0:
-      q = phi // e
-      r = phi % e
-      phi, e = e, r
-      x = x1 - q * x2
-      y = y1 - q * y2
-      x1, x2 = x2, x
-      y1, y2 = y2, y
+    # Инициализация переменных
+    a, b = e, phi
+    x0, x1 = 0, 1
+
+    # Расширенный алгоритм Евклида
+    while a > 1:
+        q = a // b
+        a, b = b, a % b
+        x0, x1 = x1 - q * x0, x0
+
+    # Если обратный элемент отрицательный, делаем его положительным
     if x1 < 0:
-      x1 += original_phi
+        x1 += phi
+
     return x1
 
 
@@ -66,34 +67,35 @@ def generate_keypair(p: int, q: int) -> tp.Tuple[tp.Tuple[int, int], tp.Tuple[in
         raise ValueError("p and q cannot be equal")
 
     n = p * q
-    phi = (p-1)(q-1)
+    phi = (p - 1) * (q - 1)
 
+    # Выбираем e такое, что 1 < e < phi и gcd(e, phi) = 1
     e = random.randrange(1, phi)
-    g = rsa.gsd(e, phi)
+    g = gcd(e, phi)        
     while g != 1:
-      e = random.randrange(1, phi)
-      g = rsa.gsd(e, phi)
+        e = random.randrange(1, phi)
+        g = gcd(e, phi)  
 
-    d = rsa.multiplicative_inverse(e, phi)
+    # Находим d — мультипликативно обратное к e по модулю phi
+    d = multiplicative_inverse(e, phi)  
+
+    # Public key: (e, n), Private key: (d, n)
     return ((e, n), (d, n))
 
 
 def encrypt(pk: tp.Tuple[int, int], plaintext: str) -> tp.List[int]:
-    # Unpack the key into it's components
+    # Распаковываем ключ
     key, n = pk
-    # Convert each letter in the plaintext to numbers based on
-    # the character using a^b mod m
+    # Шифруем каждый символ: c = m^e mod n
     cipher = [(ord(char) ** key) % n for char in plaintext]
-    # Return the array of bytes
     return cipher
 
 
 def decrypt(pk: tp.Tuple[int, int], ciphertext: tp.List[int]) -> str:
-    # Unpack the key into its components
+    # Распаковываем ключ
     key, n = pk
-    # Generate the plaintext based on the ciphertext and key using a^b mod m
+    # Расшифровываем: m = c^d mod n
     plain = [chr((char ** key) % n) for char in ciphertext]
-    # Return the array of bytes as a string
     return "".join(plain)
 
 
